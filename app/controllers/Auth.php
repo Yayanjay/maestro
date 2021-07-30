@@ -3,12 +3,21 @@
 class Auth extends Controller {
     public function index()
     {
-        $this->view('auth/login');
+        // cek apakah sudah login
+        if (isset($_SESSION['loginData'])) {
+            // jika sudah login akan dilempar ke home
+            header('Location: ' . BASEURL . '/home');
+        } else {
+            // jika belum login akan menampilkan halaman login
+            $data['judul'] = 'Sign In';
+            $this->view('auth/login', $data);
+        }
     }
     
     public function register()
     {
-        $this->view('auth/register');
+        $data['judul'] = 'Sign Up';
+        $this->view('auth/register', $data);
     }
 
     public function login_process()
@@ -17,20 +26,18 @@ class Auth extends Controller {
         $password = $_POST['password'];
         $userData = $this->model('User_model')->getUserEmail($email);
         $password_hash = $userData['password'];
-        $loginInfo = array('userId' => $userData['id'], 'email' => $userData['email'], 'isAuth' => true);
-
+        
         // cek email ada atau tidak
         if ($userData > 0) {
 
             // cek password benar atau tidak
             if (password_verify($password, $password_hash)) {
                 
-                // $_SESSION['loginData'] = [
-                //     'userId' => $userData['id'],
-                //     'email' => $userData['email'],
-                //     'isAuth' => true
-                // ];
-                $_SESSION['isAuth'] = 'true';
+                $_SESSION['loginData'] = [
+                    'userId' => $userData['id_user'],
+                    'name' => $userData['fullname'],
+                    'role' => $userData['role']
+                ];
                 header('Location: ' . BASEURL . '/home');
             } else {
                 echo "<script>
@@ -62,16 +69,27 @@ class Auth extends Controller {
             echo "<script>
                     alert('Akun Berhasil dibuat');
                     window.location.replace('" . BASEURL ."/auth')
-                    </script>";
+                  </script>";
             exit;
         } else {
             echo "<script>
                     alert('Akun Gagal dibuat');
                     window.location.replace('" . BASEURL ."/auth/register')
-                    </script>";
+                  </script>";
             exit;
         }
 
         exit;
+    }
+
+    public function logout()
+    {
+        echo "<script>
+                confirm('Yakin ingin keluar?')
+              </script>";
+        unset($_SESSION['loginData']);
+        echo "<script>
+                window.location.replace('" . BASEURL ."/home')
+              </script>";
     }
 }

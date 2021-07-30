@@ -14,14 +14,14 @@ class User_model {
         $this->db->query('SELECT * FROM ' . $this->table);
         return $this->db->resultSet();
     }
-
+    
     public function addUser($data)
     {
         // var_dump($data);
-
+        
         $password = $data['password'];
         $password_hash = password_hash($password, PASSWORD_DEFAULT);
-
+        
         $query = "INSERT INTO user
                     VALUES
                   ('', :fullname, :email, :password, :phone, :address, :role)";
@@ -33,17 +33,33 @@ class User_model {
         $this->db->bind('phone', $data['phone']);
         $this->db->bind('address', $data['address']);
         $this->db->bind('role', 'costumer');
-
+        
         $this->db->execute();
 
         return $this->db->rowCount();
     }
-
+    
     public function getUserEmail($email)
     {
         $this->db->query('SELECT * FROM ' . $this->table . ' WHERE email=:email');
         $this->db->bind('email', $email);
         return $this->db->single();
+        
+    }
+    
+    public function getAdmin()
+    {
+        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE role=:role');
+        $this->db->bind('role', 'admin');
+        return $this->db->resultSet();
+        
+    }
+
+    public function getCostumer()
+    {
+        $this->db->query('SELECT * FROM ' . $this->table . ' WHERE role=:role');
+        $this->db->bind('role', 'costumer');
+        return $this->db->resultSet();
         
     }
 }
